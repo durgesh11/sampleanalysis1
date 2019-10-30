@@ -1,0 +1,15 @@
+[
+	{"name":"fname","title":"NAME"},
+	{"name":"rejected","title":"REJECTED","breakpoints":"xs sm md","style":{"width":160,"maxWidth":160}},
+	{"name":"unanswered","title":"UNANSWERED","breakpoints":"xs sm md","style":{"width":160,"maxWidth":160}},
+	{"name":"incompleted","title":"INCOMPLETED","breakpoints":"xs sm md","style":{"width":160,"maxWidth":160}},
+	{"name":"completed","title":"COMPLETED","breakpoints":"xs sm md","style":{"width":160,"maxWidth":160}},
+	{"name":"active","title":"ACTIVE","breakpoints":"xs sm md","style":{"width":160,"maxWidth":160}},
+	{"name":"total","title":"TOTAL","breakpoints":"xs","style":{"width":160,"maxWidth":160}},
+	
+
+
+
+	{"name":"status","title":"STATUS","breakpoints":"xs","style":{"width":160,"maxWidth":250}},
+	{"name":"taget","title":" ","style":{"width":70,"maxWidth":70}}
+]

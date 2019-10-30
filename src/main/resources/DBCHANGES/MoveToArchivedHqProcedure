@@ -1,0 +1,61 @@
+CREATE   PROCEDURE MOVE_TO_ARCHIVED_HQ (IN archive_db_name VARCHAR(255),IN par_billing_date TIMESTAMP)
+BEGIN
+
+    SET @s1 = CONCAT("CREATE TABLE IF NOT EXISTS ",archive_db_name,".bill_head LIKE bill_head  ;");
+    PREPARE stmt FROM @s1;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;	
+    
+    SET @s2=CONCAT("REPLACE INTO ",archive_db_name,".bill_head (SELECT * FROM bill_head bh WHERE bh.billing_date < '",par_billing_date,"' ); ");	
+    PREPARE stmt FROM @s2;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    SET @s3 = CONCAT("CREATE TABLE IF NOT EXISTS ",archive_db_name,".bill_pos LIKE bill_pos  ;");
+    PREPARE stmt FROM @s3;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    SET @s4=CONCAT("REPLACE INTO ",archive_db_name,".bill_pos (SELECT * FROM bill_pos bp WHERE bp.billid IN (SELECT id FROM bill_head bh WHERE billing_date < '",par_billing_date,"' ));");	
+    PREPARE stmt FROM @s4;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    SET @s5 = CONCAT("CREATE TABLE IF NOT EXISTS ",archive_db_name,".closure LIKE closure  ;");
+    PREPARE stmt FROM @s5;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    SET @s6=CONCAT("REPLACE INTO ",archive_db_name,".closure (SELECT * FROM closure c WHERE c.closure_time < '",par_billing_date,"');");	
+    PREPARE stmt FROM @s6;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    SET @s7 = CONCAT("CREATE TABLE IF NOT EXISTS ",archive_db_name,".cash_register_security LIKE cash_register_security  ;");
+    PREPARE stmt FROM @s7;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    SET @s8=CONCAT("REPLACE INTO ",archive_db_name,".cash_register_security (SELECT * FROM cash_register_security crs WHERE crs.`bill_id` IN (SELECT id FROM bill_head bh WHERE billing_date < '",par_billing_date,"' ) );");	
+    PREPARE stmt FROM @s8;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+     SET @s9 = CONCAT("CREATE TABLE IF NOT EXISTS ",archive_db_name,".bill_log LIKE bill_log  ;");
+    PREPARE stmt FROM @s9;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    SET @s10=CONCAT("REPLACE INTO ",archive_db_name,".bill_log ( SELECT * FROM bill_log bl WHERE bl.`bill_time_stamp` < '",par_billing_date,"' );");	
+    PREPARE stmt FROM @s10;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    
+	 DELETE FROM hq.bill_pos WHERE billid IN (SELECT id FROM bill_head bh WHERE billing_date < par_billing_date ); 
+	 DELETE FROM hq.closure WHERE closure_time < par_billing_date; 
+	 DELETE FROM hq.cash_register_security   WHERE   `bill_id` IN (SELECT id  FROM  bill_head bh WHERE  billing_date < par_billing_date );
+	 DELETE FROM hq.bill_head WHERE billing_date < par_billing_date;
+	 DELETE FROM hq.bill_log WHERE bill_time_stamp < par_billing_date; 	
+   
+END;

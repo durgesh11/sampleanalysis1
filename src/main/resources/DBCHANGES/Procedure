@@ -1,0 +1,63 @@
+CREATE FUNCTION `hq`.`billCalculation`(
+	item_count DECIMAL(12,5),
+	item_price DECIMAL(15,5),
+	regular_price DECIMAL(15,5),
+	VAT DECIMAL(5,2),
+	service_chrg DECIMAL(5,2),
+	service_tax DECIMAL(5,2),
+	discount_percent DECIMAL(5,2),
+	vat_incl INT(11),
+	vatFactor DECIMAL(5,2),
+	return_value VARCHAR(50)
+) RETURNS DECIMAL(15,5)
+  READS SQL DATA
+    DETERMINISTIC
+	
+BEGIN
+	DECLARE discount_amount DECIMAL(15,5) DEFAULT 0;
+	DECLARE vat_amount DECIMAL(15,5) DEFAULT 0;		
+	DECLARE position_total DECIMAL(15,5) DEFAULT 0;
+	DECLARE gross_amount DECIMAL(15,5) DEFAULT 0;
+	DECLARE net_amount DECIMAL(15,5) DEFAULT 0;
+	DECLARE return_amount DECIMAL(15,5) DEFAULT 0;		
+	
+	IF(item_count IS NOT NULL AND item_price IS NOT NULL) THEN
+		SET position_total = item_count * item_price*vatFactor;
+	END IF;
+	
+	IF discount_percent IS NOT NULL AND regular_price IS NOT NULL  AND regular_price <> item_price THEN
+		SET discount_amount = (item_count*regular_price) - (position_total * (1-(discount_percent / 100)));		  		
+	ELSE
+		SET discount_amount = position_total * discount_percent / 100;	
+	END IF;
+	
+	SET position_total = position_total*(1-(discount_percent/100));
+	
+	IF(vat_incl IS NOT NULL AND vat_incl = 1) THEN
+		IF(VAT IS NOT NULL) THEN
+			SET vat_amount = position_total * VAT / (100 + VAT);
+		END IF;								
+		SET gross_amount =(item_count*regular_price*vatFactor) - discount_amount;
+		SET net_amount = gross_amount - vat_amount;
+	ELSE
+		IF(VAT IS NOT NULL) THEN
+			SET vat_amount = position_total * VAT / 100;
+		END IF;				
+		SET net_amount = (item_count*regular_price*vatFactor) - discount_amount;
+		SET gross_amount = net_amount + vat_amount;
+	END IF;
+	
+	IF(UPPER(return_value) = 'VAT') THEN
+		SET return_amount = vat_amount;	
+	ELSEIF(UPPER(return_value) = 'DISCOUNT') THEN
+		SET return_amount = item_count*(regular_price-((item_price*vatFactor)*(1-discount_percent/100)));
+	ELSEIF(UPPER(return_value) = 'GROSS_AMOUNT') THEN
+		SET return_amount = gross_amount;
+	ELSEIF(UPPER(return_value) = 'NET_AMOUNT') THEN
+		SET return_amount = net_amount;
+	ELSE
+		SET return_amount = net_amount + vat_amount;
+	END IF;
+	
+	RETURN return_amount;
+END

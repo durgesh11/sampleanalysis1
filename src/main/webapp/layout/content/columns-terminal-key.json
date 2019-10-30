@@ -1,0 +1,13 @@
+[
+	
+	
+	
+	{"name":"store","title":"Store","style":{"width":"26%","maxWidth":"26%"}},
+	{"name":"terminals","title":"Terminals","style":{"width":"26%","maxWidth":"26%"}},
+	{"name":"terminalname","title":"Terminals Name","style":{"width":"26%","maxWidth":"26%"}},
+	{"name":"certificate","title":" ","filterable":false,"style":{"width":"10%","maxWidth":"10%"}},
+	{"name":"edit","title":" ","filterable":false,"style":{"width":"10%","maxWidth":"10%"}}
+	
+	
+]
+

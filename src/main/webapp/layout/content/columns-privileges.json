@@ -1,0 +1,11 @@
+[
+	
+	{"name":"firstName","title":"First Name","style":{"width":"40%","maxWidth":"40%"}},
+	{"name":"userName","title":"User Name","style":{"width":"40%","maxWidth":"40%"}},
+	{"name":"quickAssign","title":" ","filterable":false,"style":{"width":"10%","maxWidth":"10%"}},
+	{"name":"edit","title":" ","filterable":false,"style":{"width":"10%","maxWidth":"10%"}}
+
+	
+	
+]
+

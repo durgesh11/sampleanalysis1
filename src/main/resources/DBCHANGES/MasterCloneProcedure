@@ -1,0 +1,275 @@
+CREATE PROCEDURE `CREATE_STORE_CLONE_FOR_MASTER`(old_store_Id INT,new_store_id INT ,chain_owner_id INT)
+BEGIN
+ DECLARE tempCount INT DEFAULT 0;
+ DECLARE var_printer_id INT DEFAULT 0;
+ DECLARE var_item_count INT DEFAULT 0;
+ 
+ DECLARE var_item_id INT DEFAULT 0;
+ DECLARE var_unique_item_id INT DEFAULT 0;
+ DECLARE var_stock_count INT DEFAULT 0;
+ DECLARE var_group INT DEFAULT 0;
+ DECLARE group_finished INT DEFAULT 0;
+ DECLARE var_groupID INT DEFAULT 0;
+ DECLARE group_cur CURSOR FOR SELECT id FROM groups WHERE store_id=old_store_Id AND chainowner_id=chain_owner_id;
+ 
+ DECLARE CONTINUE HANDLER FOR NOT FOUND SET group_finished = 1;
+ 
+ DROP TEMPORARY TABLE IF EXISTS tbl_layout;
+ CREATE TEMPORARY TABLE tbl_layout (table_id INT(11),layout_id INT(11),old_table INT(11),old_layout INT(11));
+ /*
+  *  CREATE PRINTER ENTRY
+  */
+		/*UPDATE printer SET default_bill_printer_id = 0 WHERE store_id = */
+		
+		INSERT INTO printer(`name`,`port`,ip,`serial`,network,`type`,copy_printer_id,arrange_seq,order_xl,order_footer,order_force_groups,
+		pulse,order_duplicate,kitchen,chainowner_id,store_id,default_bill_printer_id,printer_updated_flag,pos_printer_id)
+		(
+			SELECT `name`,`port`,ip,`serial`,network,`type`,copy_printer_id,arrange_seq,order_xl,order_footer,order_force_groups,
+			pulse,order_duplicate,kitchen,chainowner_id,new_store_id,default_bill_printer_id,printer_updated_flag,pos_printer_id
+			FROM printer WHERE store_id=old_store_Id AND chain_owner_id=chain_owner_id
+		);
+		SELECT COUNT(*) INTO tempCount FROM printer WHERE store_id=new_store_id AND chainowner_id=chain_owner_id;
+		
+		SELECT MAX(id) INTO var_printer_id FROM printer WHERE store_id=new_store_id AND chainowner_id=chain_owner_id AND default_bill_printer_id=1;
+		
+		IF tempCount=1 THEN
+				
+			UPDATE properties_android SET `value`= var_printer_id,property_update_flag=1  WHERE store_id=new_store_id AND chainowner_id=chain_owner_id AND `name` LIKE 'default_printer%';
+			
+		END IF;
+		  
+			
+  /*
+   *  CREATE ITEM AND GROUP ENTRY
+   */
+	
+		OPEN group_cur;
+		SET group_finished=0;
+		group_Loop : LOOP
+			
+			FETCH group_cur INTO var_group;
+			
+				IF group_finished=1 THEN
+					CLOSE group_cur;
+					LEAVE group_Loop;
+				END IF;	
+				
+				INSERT INTO groups(`name`,display,description,show_pda,show_terminal,chargeuser,show_gv,show_buffet,printer,
+				order_id,disableminus,taxgroup,hidden,enable_modifiers,department,service_charge_enabled,food,liquor,
+				superiorgroup,food_type,smartkey,chainowner_id,company,group_updated_flag,pos_group_id,store_id,item_updated_flag) 
+				( SELECT
+					`name`,display,description,show_pda,show_terminal,chargeuser,show_gv,show_buffet,printer,
+					order_id,disableminus,taxgroup,hidden,enable_modifiers,department,service_charge_enabled,food,liquor,
+					superiorgroup,food_type,smartkey,chainowner_id,company,group_updated_flag,pos_group_id,new_store_id,item_updated_flag
+					FROM groups WHERE id=var_group
+				);
+				
+				SELECT MAX(id) INTO var_groupID FROM groups WHERE store_id=new_store_id AND chainowner_id=chain_owner_id;
+			
+				BEGIN
+					DECLARE finished INT DEFAULT 0;
+					DECLARE item_cur CURSOR FOR SELECT id FROM item WHERE store_id=old_store_Id AND chainowner_id=chain_owner_id AND groups=var_group;		
+					DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;	
+					 
+					
+					OPEN item_cur;
+					SET finished=0;
+					Item_Loop : LOOP
+					 
+					  FETCH item_cur INTO var_item_id;
+					  
+						  IF finished=1 THEN
+							CLOSE item_cur;
+							LEAVE Item_Loop;
+						   END IF;	
+						   
+			   
+						    INSERT INTO item(
+								number,groups,vat,`name`,display,description,remarks,`year`,order_id,botsize,color,`view` ,fullweight,emptyweight,gebinde 
+								,ean13,info,watch,active,hidden,special_configuration,default_itemadd,tax1,shortcut_id,
+								shortcut_name,custom1,custom2,custom3,custom4,custom5,custom6,custom7,custom8,custom9,custom10,
+								custom11,custom12,custom13,custom14,custom15,custom16,custom17,custom18,custom19,custom20,`type`,
+								discount_threshold,discount_percent,discount_fixed,discount_ncquantity,vat_account_id,tax_account_id,
+								service_charge_account_id,chainowner_id,item_updated_flag,pos_item_id,store_id		
+							)
+							(
+								SELECT number,var_groupID,vat,`name`,display,description,remarks,`year`,order_id,botsize,color,var_groupID,fullweight,emptyweight,gebinde 
+								,ean13,info,watch,active,hidden,special_configuration,default_itemadd,tax1,shortcut_id,
+								shortcut_name,custom1,custom2,custom3,custom4,custom5,custom6,custom7,custom8,custom9,custom10,
+								custom11,custom12,custom13,custom14,custom15,custom16,custom17,custom18,custom19,custom20,`type`,
+								discount_threshold,discount_percent,discount_fixed,discount_ncquantity,vat_account_id,tax_account_id,
+								service_charge_account_id,chainowner_id,item_updated_flag,pos_item_id,new_store_id
+								FROM item WHERE id=var_item_id
+							);	
+							
+							SELECT MAX(id) INTO var_unique_item_id FROM item WHERE store_id=new_store_id AND chainowner_id=chain_owner_id;
+							
+							INSERT INTO stock( item,liter,bot,st,kl,gv,kg,liter_min,bot_min,st_min,kl_min,gv_min,kg_min,ip )
+							  (
+								 SELECT var_unique_item_id,liter,bot,st,kl,gv,kg,liter_min,bot_min,st_min,kl_min,gv_min,kg_min,ip 
+								 FROM stock WHERE item=var_item_id	
+							  );
+							  
+							  INSERT INTO elcon_plu(plu,`type`,item,tap_id )
+								( SELECT plu,`type`,var_unique_item_id,tap_id FROM elcon_plu WHERE item=var_item_id );
+							 
+							  UPDATE groups SET item_updated_flag=1 WHERE id IN(var_groupID);
+							  
+							 INSERT INTO price(
+								item,`type`,pr1,pr2,pr3,pr4,pr5,pr6,pr7,standard,pr8,pr9,pr10,pr11,pr12,pr13,pr14,pr15,pr16,pr17,pr18,pr19,pr20
+							 )(
+								SELECT var_unique_item_id,`type`,pr1,pr2,pr3,pr4,pr5,pr6,pr7,standard,pr8,pr9,pr10,pr11,pr12,pr13,pr14,pr15,pr16,pr17,pr18,pr19,pr20
+								FROM price WHERE item=var_item_id
+							 );
+							 
+							 INSERT INTO recipe(item,percent,child_item,itemsize,`count`)
+							 (
+								SELECT var_unique_item_id,percent,child_item,itemsize,`count` FROM recipe WHERE item=var_item_id
+							 );
+							 
+							INSERT INTO item_addition (item_id,`name`,pos_itemaddition_id )
+							(
+								SELECT var_unique_item_id,`name`,pos_itemaddition_id FROM item_addition WHERE item_id=var_item_id
+							 
+							 );
+						END LOOP; 
+				END;
+				
+			END LOOP;
+	
+    /*
+     * CREATE TABLE LAYOUT ENTRY
+     */		
+			block1: BEGIN
+				
+				DECLARE layout_finished INT DEFAULT 0;
+				DECLARE var_table_id INT DEFAULT 0;
+				DECLARE var_layout_id INT DEFAULT 0;
+				DECLARE var_layoutMap_id INT DEFAULT 0;
+				DECLARE var_tableID INT DEFAULT 0;
+				DECLARE var_layoutID INT DEFAULT 0;
+				DECLARE var_layoutCNT INT DEFAULT 0;
+				DECLARE var_tableCNT INT DEFAULT 0;
+				DECLARE var_tableFLAG INT DEFAULT 0;
+				DECLARE var_layoutFLAG INT DEFAULT 0;
+				
+				DECLARE table_layout_cur CURSOR FOR SELECT id,table_id,layout_id FROM tables_layouts WHERE store_id=old_store_id AND chainowner_id=chain_owner_id 
+				ORDER BY layout_id,table_id;
+				
+				DECLARE CONTINUE HANDLER FOR NOT FOUND SET layout_finished = 1;
+				
+				
+				OPEN table_layout_cur;
+				SET layout_finished=0;
+				Layout_Loop : LOOP
+				 
+				  FETCH table_layout_cur INTO var_layoutMap_id,var_table_id,var_layout_id;
+				  
+					  IF layout_finished=1 THEN
+						CLOSE table_layout_cur;
+						LEAVE Layout_Loop;
+					   END IF;	
+					   
+					   SET var_layoutCNT=0;
+					   SET var_tableCNT=0;
+					   SET var_tableFLAG=0;
+					   SET var_layoutFLAG=0;
+					   
+					   SELECT COUNT(*) INTO var_layoutCNT  FROM tbl_layout WHERE old_layout IN (var_layout_id);
+					   SELECT COUNT(*) INTO var_tableCNT FROM tbl_layout WHERE old_table IN (var_table_id);
+					IF var_layoutCNT=0 THEN	
+						 INSERT INTO table_layout(`name`,hidden,store_id,chainowner_id,store_terminal_internal_id,pos_table_layout_id,table_layout_updated_flag,table_updated_flag,order_id)
+						(
+							SELECT `name`,hidden,new_store_id,chainowner_id,store_terminal_internal_id,pos_table_layout_id,table_layout_updated_flag,table_updated_flag,order_id
+							FROM table_layout
+							WHERE id=var_layout_id 
+						 );	
+					ELSE
+						SELECT layout_id INTO var_layoutFLAG FROM(SELECT layout_id FROM tbl_layout WHERE old_layout=var_layout_id LIMIT 0,1)A;	
+					END IF;
+										
+					 SELECT MAX(id) INTO var_layoutID FROM  table_layout WHERE store_id=new_store_id AND chainowner_id=chain_owner_id;
+					
+					IF var_tableCNT=0 THEN		 
+						 INSERT INTO table_names
+						 (	`name`,description,customer,active,priority,personen_max,remain,smoking,bookedname,stock,promotion,promo_amount,
+							promo_percent,layout,`type`,bill_text,deleted,`status`,status_text,store_id,pos_table_id,table_update_flag,chainowner_id,
+							original_table_Id,store_terminal_internal_id,order_id
+						 )
+						 (
+							SELECT `name`,description,customer,active,priority,personen_max,remain,smoking,bookedname,stock,promotion,promo_amount,
+							promo_percent,var_layoutID,`type`,bill_text,deleted,`status`,status_text,new_store_id,pos_table_id,table_update_flag,chainowner_id,
+							original_table_Id,store_terminal_internal_id,order_id
+							FROM table_names
+							WHERE id=var_table_id 
+						 );
+					ELSE
+						SELECT table_id INTO var_tableFLAG FROM(SELECT table_id FROM tbl_layout WHERE old_table=var_table_id LIMIT 0,1)B;
+					END IF;	 
+					
+					SELECT MAX(id) INTO var_tableID FROM table_names WHERE store_id=new_store_id AND chainowner_id=chain_owner_id;										
+					 
+					 IF var_tableFLAG !=0 THEN
+						SET var_tableID=var_tableFLAG;
+					 END IF;
+					 IF var_layoutFLAG !=0 THEN
+						SET var_layoutID=var_layoutFLAG;
+					 END IF;
+					 
+					 INSERT INTO tbl_layout VALUES(var_tableID,var_layoutID,var_table_id,var_layout_id);					 
+					 
+					 INSERT INTO tables_layouts
+					 (	table_id,layout_id,order_id,store_id,chainowner_id,store_terminal_internal_id,pos_table_inlayout_id)
+					 (
+						SELECT var_tableID,var_layoutID,order_id,new_store_id,chainowner_id,store_terminal_internal_id,
+						pos_table_inlayout_id FROM tables_layouts WHERE id=var_layoutMap_id
+					  );	
+				
+				END LOOP;
+				INSERT INTO table_layout(
+					`name`,hidden,store_id,chainowner_id,store_terminal_internal_id,pos_table_layout_id,table_layout_updated_flag,table_updated_flag,order_id
+				)(
+					SELECT `name`,hidden,new_store_id,chainowner_id,store_terminal_internal_id,pos_table_layout_id,table_layout_updated_flag,table_updated_flag,order_id
+					FROM table_layout WHERE store_id=old_store_id AND chainowner_id=chain_owner_id AND id NOT IN(SELECT old_layout FROM tbl_layout)
+				);
+				
+			END block1;		
+			
+			
+    /*
+     * CREATE USER ENTRY
+     */	
+			INSERT INTO `user`
+			 (
+				 `name`,passwd,priv,description,default_main,task,area_lower,area_upper,color,auto_table,mobile_passwd,page,enable_timerec,custom_slip_text,
+				 turnoverprintedcount,working_time,enableF3,enableF4,enableF5,enableF6,enableF7,enableF8,enableF11,enableF12,enable_kitchen_message,enable_daily_closure,
+				 enable_cancel_bill,enable_add_customer,enable_select_customer,enable_change_room_settlement,enable_liquor_permit,enable_bill_print,deleted,smartkey_password,
+				 locked,forward_url,tap_user,store_id,chainowner_id,store_terminal_internal_id,pos_user_id,user_update_flag
+			 )(
+				 SELECT `name`,passwd,priv,description,default_main,task,area_lower,area_upper,color,auto_table,mobile_passwd,page,enable_timerec,custom_slip_text,
+				 turnoverprintedcount,working_time,enableF3,enableF4,enableF5,enableF6,enableF7,enableF8,enableF11,enableF12,enable_kitchen_message,enable_daily_closure,
+				 enable_cancel_bill,enable_add_customer,enable_select_customer,enable_change_room_settlement,enable_liquor_permit,enable_bill_print,deleted,smartkey_password,
+				 locked,forward_url,tap_user,new_store_id,chainowner_id,store_terminal_internal_id,pos_user_id,user_update_flag
+				 FROM `user`  WHERE store_id=old_store_id AND chainowner_id=chain_owner_id
+			 );
+    	
+    
+    /*
+     * CREATE CUSTOMER ENTRY
+     */		
+			INSERT INTO customer(
+				 form,title,name1,name2,company,address,postalcode,city,country,tel,fax,mobile,email1,email2,website,
+				 category,hidden,birthday,uid,paymentterms,`language`,role,remarks,commercialRegisterNo,
+				 chainowner_id,deleted,customer_update_flag,store_id,pos_customer_id
+			 )(
+			 SELECT form,title,name1,name2,company,address,postalcode,city,country,tel,fax,mobile,email1,email2,website,
+			 category,hidden,birthday,uid,paymentterms,`language`,role,remarks,commercialRegisterNo,
+			 chainowner_id,deleted,customer_update_flag,new_store_id,pos_customer_id
+			 FROM customer  WHERE store_id=old_store_id AND chainowner_id=chain_owner_id
+			 );
+			 
+	/*
+	 *UPDATE PROPERTY ANDROID
+	 */		 
+		UPDATE properties_android SET `value`='on' WHERE `name` LIKE '%android_sync_data_available%' AND chainowner_id=chain_owner_id AND store_id=new_store_id;
+END

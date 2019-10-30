@@ -1,0 +1,9 @@
+[
+
+	{"name":"id","title":"ID","style":{"width":100,"maxWidth":100}},
+	{"name":"firstName","title":"NAME"},
+	{"name":"mobileNo","title":"MOBILE No","breakpoints":"xs sm md"},
+	{"name":"duration","title":"DURATION","breakpoints":"xs sm md", "type":"date"},
+	{"name":"status","title":"STATUS"},
+	{"name":"taget","title":" ","style":{"width":70,"maxWidth":70}}
+]

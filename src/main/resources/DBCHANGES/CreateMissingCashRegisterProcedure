@@ -1,0 +1,85 @@
+CREATE PROCEDURE CREATE_MISSING_CRS()
+BEGIN
+
+  
+  DECLARE crs_count INT(11) DEFAULT 0;
+  DECLARE chainowner_finished INT(11) DEFAULT 0;  
+  DECLARE tmp_chainowner_id INT(11) DEFAULT 0;
+  DECLARE tmp_terminal_id INT(11) DEFAULT 0;
+  
+  /*
+  DECLARE chainowner_cur CURSOR FOR SELECT id,d.terminal_id FROM chain_owner c INNER JOIN (
+			SELECT DISTINCT chainowner_id,terminal_id FROM properties_android WHERE NAME LIKE '%isDigitalSignRequired%' AND VALUE='on')d
+			ON d.chainowner_id=c.id WHERE deleted=0 AND active=1;
+		*/ 
+		
+  DECLARE chainowner_cur CURSOR FOR SELECT id,e.terminal_id FROM chain_owner c INNER JOIN (
+			SELECT DISTINCT chain_owner,terminal_id FROM terminal_key WHERE LENGTH(smart_card_serial_number) > 1)e 
+			ON e.chain_owner=c.id WHERE deleted=0 AND active=1;
+	
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET chainowner_finished = 1;
+  
+  	
+	OPEN chainowner_cur;
+	SET chainowner_finished=0;
+	chainowner_loop : LOOP
+	
+		FETCH chainowner_cur INTO tmp_chainowner_id,tmp_terminal_id;
+		
+			IF chainowner_finished=1 THEN
+				CLOSE chainowner_cur;
+				LEAVE chainowner_loop;
+			END IF;
+	
+			block1: BEGIN	
+				  DECLARE var_id INT(11) DEFAULT 0;
+				  DECLARE var_rg_num VARCHAR(100);
+				  DECLARE var_chain_owner_id INT(11) DEFAULT 0; 
+				  DECLARE var_store_id INT(11) DEFAULT 0; 
+				  DECLARE var_terminal_id INT(11) DEFAULT 0;
+				  DECLARE billhead_finished INT(11) DEFAULT 0;
+				  DECLARE tmp_ds_count VARCHAR(100);
+				  DECLARE var_bill_cnt INT(11) DEFAULT 0;				  			
+				
+					DECLARE billhead_cur CURSOR FOR SELECT bh.id,bh.rg_num,chain_owner_id,bh.outlet_id,bh.store_terminal_internal_id FROM bill_head bh  WHERE chain_owner_id=tmp_chainowner_id AND store_terminal_internal_id=tmp_terminal_id AND bh.id > 0 ;     
+					DECLARE CONTINUE HANDLER FOR NOT FOUND SET billhead_finished = 1;
+			 
+					OPEN billhead_cur;
+					SET billhead_finished=0;
+					billhead_loop : LOOP
+						
+						FETCH billhead_cur INTO var_id,var_rg_num,var_chain_owner_id,var_store_id,var_terminal_id;
+						
+							IF billhead_finished=1 THEN
+								CLOSE billhead_cur;
+								LEAVE billhead_loop;
+							END IF;
+							
+							
+						
+						SET crs_count=0;
+						SELECT COUNT(id) INTO crs_count FROM cash_register_security WHERE  bill_id = var_id;
+						 
+							IF crs_count = 0 THEN
+									
+								SET tmp_ds_count=0;	
+								 SELECT `value` INTO tmp_ds_count FROM properties_android WHERE `name`='isDigitalSignRequired' AND chainowner_id=var_chain_owner_id AND store_id = var_store_id AND terminal_id = var_terminal_id ;
+								
+								IF tmp_ds_count = 'on' THEN
+													
+									/* create missing_crs */
+									SELECT COUNT(*) INTO var_bill_cnt FROM missing_crs WHERE bill_id=var_id;
+									
+									IF var_bill_cnt=0 THEN	
+										INSERT INTO missing_crs(bill_id,rg_num,chain_owner_id,store_id,terminal_id)
+										VALUES(var_id,var_rg_num,var_chain_owner_id,var_store_id,var_terminal_id);
+									END IF;
+															
+								END IF;	 
+							END IF;
+					END LOOP; 
+				
+			END block1;
+			
+		END LOOP;
+END;

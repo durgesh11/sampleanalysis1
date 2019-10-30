@@ -1,0 +1,156 @@
+CREATE PROCEDURE CREATE_MASTER_EMPLOYEE()
+BEGIN
+
+ 
+  DECLARE var_id INT DEFAULT 0;
+  DECLARE var_name VARCHAR(100);
+  DECLARE var_owner_name VARCHAR(100) DEFAULT '';
+  DECLARE var_address VARCHAR(200) DEFAULT '';
+  DECLARE var_city VARCHAR(200) DEFAULT '';
+  DECLARE var_postal_code VARCHAR(50) DEFAULT '';
+  DECLARE var_country_id INT(11) DEFAULT 0; 
+  DECLARE var_telephone VARCHAR(20) DEFAULT '';
+  DECLARE var_email_address VARCHAR(50) DEFAULT '';
+  DECLARE var_description VARCHAR(200) DEFAULT '';
+  DECLARE var_user_name VARCHAR(50) DEFAULT '';
+  DECLARE var_language VARCHAR(50) DEFAULT '';
+  DECLARE var_password VARCHAR(50);
+  DECLARE var_active TINYINT(1) DEFAULT 0;
+  DECLARE var_first_name VARCHAR(50) DEFAULT '';
+  DECLARE var_last_name VARCHAR(50) DEFAULT '';
+  DECLARE var_show_graphs VARCHAR(50) DEFAULT '';
+   DECLARE tmp_employee_id INT(11) DEFAULT 0;
+  DECLARE tmp_user_count INT(4) DEFAULT 0;
+  DECLARE emp_cnt INT(4) DEFAULT 0;
+ DECLARE chainowner_finished INT(1) DEFAULT 0;
+ DECLARE temp_user VARCHAR(50) DEFAULT '';
+  
+   DECLARE chainowner_cur CURSOR FOR SELECT id,`name`,owner_name,address,city,postal_code,country_id,telephone,email_address,description,user_name,`language`,`password`,
+	active, first_name,last_name,show_graphs FROM chain_owner WHERE deleted=0 AND id> -1;
+
+      
+ DECLARE CONTINUE HANDLER FOR NOT FOUND SET chainowner_finished = 1;
+ 
+
+		OPEN chainowner_cur;
+		SET chainowner_finished=0;
+		chainowner_loop : LOOP
+			
+			FETCH chainowner_cur INTO var_id,var_name,var_owner_name,var_address,var_city,var_postal_code,var_country_id,var_telephone,var_email_address,var_description,
+			var_user_name,var_language,var_password,var_active,var_first_name,var_last_name,var_show_graphs;
+			
+				IF chainowner_finished=1 THEN
+					CLOSE chainowner_cur;
+					LEAVE chainowner_loop;
+				END IF;
+				
+			SET tmp_user_count=0;	
+			SELECT COUNT(*) INTO tmp_user_count FROM employee WHERE 
+			 username=var_user_name AND chain_owner_id=var_id;
+			
+			IF tmp_user_count=0 THEN
+					
+					SET temp_user=var_user_name;			
+					SET emp_cnt=0;	
+					SELECT COUNT(*) INTO emp_cnt FROM employee WHERE username=var_user_name;
+					 
+					 IF emp_cnt>0 THEN
+						SET temp_user=CONCAT(var_user_name,'_1');
+					 END IF;
+			
+				/* create employee */	
+				INSERT INTO employee(username,`password`,first_name,last_name,telephone,email_address,registration_date,chain_owner_id,emp_type,deleted,active,show_graphs)
+				VALUES(temp_user,var_password,var_first_name,var_last_name,var_telephone,var_email_address,CURRENT_TIMESTAMP,var_id,1,FALSE,var_active,var_show_graphs);
+				
+				SELECT MAX(id) INTO tmp_employee_id FROM employee;
+				
+				/* create privilleges */
+				
+				block1: BEGIN					
+					DECLARE var_cat_id INT(11) DEFAULT 0;
+					DECLARE var_18n_key_message VARCHAR(50) DEFAULT '';
+					DECLARE var_hidden TINYINT(1) DEFAULT 0;										
+					DECLARE category_finished INT(1) DEFAULT 0;						
+						
+					
+					DECLARE category_cur CURSOR FOR SELECT id,i18n_key_message,hidden FROM category WHERE chain_owner_id=var_id;					
+					
+					
+					DECLARE CONTINUE HANDLER FOR NOT FOUND SET category_finished = 1;					
+					
+					OPEN category_cur;
+					SET category_finished=0;
+					category_loop : LOOP
+					FETCH category_cur INTO var_cat_id,var_18n_key_message,var_hidden;
+						
+					
+						IF category_finished=1 THEN
+							CLOSE category_cur;
+							LEAVE category_loop;																
+						END IF;
+					
+						block2: BEGIN
+						
+							DECLARE store_finished INT(1) DEFAULT 0;
+							DECLARE tmp_value TINYINT(1) DEFAULT 1;								
+							DECLARE var_store_id INT(11) DEFAULT 0;		
+							
+							DECLARE store_cur CURSOR FOR SELECT id FROM store WHERE chain_owner=var_id;																			
+							DECLARE CONTINUE HANDLER FOR NOT FOUND SET store_finished = 1;
+							
+							
+							OPEN store_cur;
+							SET store_finished=0;
+							store_loop : LOOP
+							FETCH store_cur INTO var_store_id;
+							
+								IF store_finished=1 THEN
+									CLOSE store_cur;
+									LEAVE store_loop;																
+								END IF;
+								SET tmp_value=0;
+																
+								IF var_18n_key_message NOT IN('Admin.System','Master.System.Privileges')  AND var_hidden=1 THEN
+									SET tmp_value=0;
+								ELSE
+									IF var_18n_key_message IN('Properties.Property','Title.Key','Header.Label.TerminalConfiguration','ItemCustomPrice.Property') THEN
+										SET tmp_value=0;
+									ELSE
+										SET tmp_value=1;
+									END IF;
+								END IF;	
+											
+								
+								INSERT INTO employee_privileges(employee_id,chain_owner_id,store_id,category_id,`value`) VALUES
+								(tmp_employee_id,var_id,var_store_id,var_cat_id,tmp_value);
+								
+							END LOOP; 
+						END block2;
+					
+					END LOOP; 
+					
+					block3: BEGIN
+					DECLARE message_finished INT(1) DEFAULT 0;
+					DECLARE var_message_id INT(11) DEFAULT 0;
+					DECLARE message_cur CURSOR FOR SELECT message_id FROM message_chainowner_mapping store WHERE chainowner_id=var_id;
+					DECLARE CONTINUE HANDLER FOR NOT FOUND SET message_finished = 1;
+					
+					OPEN message_cur;
+					SET message_finished=0;
+					message_loop : LOOP
+					FETCH message_cur INTO var_message_id;
+						
+						IF message_finished=1 THEN
+							CLOSE message_cur;
+							LEAVE message_loop;																
+						END IF;
+						
+						INSERT INTO message_chainowner_mapping(message_id,chainowner_id,employee_id,deleted) VALUES(var_message_id,var_id,tmp_employee_id,0);
+				
+					
+					END LOOP;
+					END block3;
+				END block1;
+			END IF;
+		END LOOP; 
+	END;

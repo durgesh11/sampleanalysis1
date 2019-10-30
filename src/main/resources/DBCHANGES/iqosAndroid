@@ -1,0 +1,266 @@
+CREATE DATABASE `maintenancehq` CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+CREATE TABLE `bill_head` (
+  `p_id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) DEFAULT NULL,
+  `user` text COLLATE utf8_unicode_ci,
+  `tableid` int(11) DEFAULT NULL,
+  `cust` int(11) DEFAULT NULL,
+  `rg_num` text COLLATE utf8_unicode_ci,
+  `rg_num_int` int(11) DEFAULT '0',
+  `time` text COLLATE utf8_unicode_ci,
+  `rabattpr` text COLLATE utf8_unicode_ci,
+  `rabatt` text COLLATE utf8_unicode_ci,
+  `service` text COLLATE utf8_unicode_ci,
+  `add_value` text COLLATE utf8_unicode_ci,
+  `add_text` text COLLATE utf8_unicode_ci,
+  `add20_value` text COLLATE utf8_unicode_ci,
+  `add20_text` text COLLATE utf8_unicode_ci,
+  `line1` text COLLATE utf8_unicode_ci,
+  `add12_value` text COLLATE utf8_unicode_ci,
+  `add12_text` text COLLATE utf8_unicode_ci,
+  `period` int(11) DEFAULT NULL,
+  `partie` int(11) DEFAULT '0',
+  `rg_time` text COLLATE utf8_unicode_ci,
+  `cancelled` int(11) DEFAULT '0',
+  `paymentterms` text COLLATE utf8_unicode_ci,
+  `gutschein` text COLLATE utf8_unicode_ci,
+  `vatincl` int(11) DEFAULT '1',
+  `company` int(11) DEFAULT '1',
+  `anzahlung_bar` text COLLATE utf8_unicode_ci,
+  `anzahlung_kredit` text COLLATE utf8_unicode_ci,
+  `connectedorder` int(11) DEFAULT '0',
+  `billtype` int(11) DEFAULT '0',
+  `customer_title` text COLLATE utf8_unicode_ci,
+  `customer_name1` text COLLATE utf8_unicode_ci,
+  `customer_name2` text COLLATE utf8_unicode_ci,
+  `customer_company` text COLLATE utf8_unicode_ci,
+  `customer_address` text COLLATE utf8_unicode_ci,
+  `customer_postalcode` text COLLATE utf8_unicode_ci,
+  `customer_city` text COLLATE utf8_unicode_ci,
+  `customer_country` text COLLATE utf8_unicode_ci,
+  `customer_uid` text COLLATE utf8_unicode_ci,
+  `billing_address` text COLLATE utf8_unicode_ci,
+  `bill_gv_head_id` int(11) DEFAULT NULL,
+  `booking_name` text COLLATE utf8_unicode_ci,
+  `service_charge` text COLLATE utf8_unicode_ci,
+  `receiving_person` text COLLATE utf8_unicode_ci,
+  `pax` int(11) DEFAULT '1',
+  `permit_number` text COLLATE utf8_unicode_ci,
+  `permit_holder` text COLLATE utf8_unicode_ci,
+  `permit_date` text COLLATE utf8_unicode_ci,
+  `permit_date_to` text COLLATE utf8_unicode_ci,
+  `settlement` int(11) DEFAULT '-1',
+  `settlement_date` text COLLATE utf8_unicode_ci,
+  `settlement_account` text COLLATE utf8_unicode_ci,
+  `guest_name` text COLLATE utf8_unicode_ci,
+  `business_date` text COLLATE utf8_unicode_ci,
+  `cancelled_user` text COLLATE utf8_unicode_ci,
+  `cancelled_date` text COLLATE utf8_unicode_ci,
+  `cancellation_reason` text COLLATE utf8_unicode_ci,
+  `bill_rounding_amount` text COLLATE utf8_unicode_ci,
+  `connected_Id` int(11) DEFAULT NULL,
+  `hash_value` text COLLATE utf8_unicode_ci,
+  `sync` int(11) DEFAULT '0',
+  `timestamp` longtext COLLATE utf8_unicode_ci,
+  `sync_timestamp` int(11) DEFAULT '0',
+  `seqNumber` mediumtext COLLATE utf8_unicode_ci,
+  `billHash` text COLLATE utf8_unicode_ci,
+  `line_1` text COLLATE utf8_unicode_ci,
+  `adjustmentBill` tinyint(1) DEFAULT NULL,
+  `nullBeleg` tinyint(1) DEFAULT NULL,
+  `refBillNum` text COLLATE utf8_unicode_ci,
+  `monthEndBill` tinyint(1) DEFAULT NULL,
+  `chainowner_id` int(11) DEFAULT NULL,
+  `store_id` int(11) DEFAULT NULL,
+  `terminal_id` int(11) DEFAULT NULL,
+  `insert_time` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`p_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `bill_pos` (
+  `p_id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) DEFAULT NULL,
+  `pos_id` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `billid` int(11) DEFAULT NULL,
+  `item` int(11) DEFAULT NULL,
+  `itemname` text COLLATE utf8_unicode_ci,
+  `count` text COLLATE utf8_unicode_ci,
+  `itemsize` int(11) DEFAULT NULL,
+  `price` text COLLATE utf8_unicode_ci,
+  `vat` text COLLATE utf8_unicode_ci,
+  `unit` text COLLATE utf8_unicode_ci,
+  `mult` text COLLATE utf8_unicode_ci,
+  `groupid` int(11) DEFAULT NULL,
+  `groupname` text COLLATE utf8_unicode_ci,
+  `vatfactor` text COLLATE utf8_unicode_ci,
+  `ek` text COLLATE utf8_unicode_ci,
+  `orderid` int(11) DEFAULT '0',
+  `grouporder` int(11) DEFAULT '0',
+  `tax1` text COLLATE utf8_unicode_ci,
+  `item_type` text COLLATE utf8_unicode_ci,
+  `discount_type` int(11) DEFAULT '0',
+  `regular_price` text COLLATE utf8_unicode_ci,
+  `kot` int(11) DEFAULT NULL,
+  `seqNumber` mediumtext COLLATE utf8_unicode_ci,
+  `chainowner_id` int(11) DEFAULT NULL,
+  `store_id` int(11) DEFAULT NULL,
+  `terminal_id` int(11) DEFAULT NULL,
+  `insert_time` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`p_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `cancelation` (
+  `pid` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) DEFAULT NULL,
+  `itemId` int(11) DEFAULT NULL,
+  `itemName` text,
+  `count` double DEFAULT NULL,
+  `itemSize` text,
+  `itemType` text,
+  `itemAdd` int(11) DEFAULT NULL,
+  `user` text,
+  `tableId` text,
+  `party` int(11) DEFAULT NULL,
+  `concluded` tinyint(1) DEFAULT NULL,
+  `time` text,
+  `timestamp` longtext,
+  `orderId` int(11) DEFAULT NULL,
+  `originalTerminal` text,
+  `dispenserOk` tinyint(1) DEFAULT NULL,
+  `businessDate` text,
+  `cancellationReason` text,
+  `sync` int(11) DEFAULT NULL,
+  `price` double DEFAULT NULL,
+  `chainowner_Id` int(11) DEFAULT NULL,
+  `store_id` int(11) DEFAULT NULL,
+  `terminal_id` int(11) DEFAULT NULL,
+  `sync_timestamp` longtext,
+  `insert_time` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`pid`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `cash_register_security` (
+  `pid` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) DEFAULT NULL,
+  `billid` int(11) DEFAULT NULL,
+  `register_id` text COLLATE utf8_unicode_ci,
+  `receipt_no_int` mediumtext COLLATE utf8_unicode_ci,
+  `receipt_no` text COLLATE utf8_unicode_ci,
+  `receipt_date_time` text COLLATE utf8_unicode_ci,
+  `amount_rate_standard` double DEFAULT NULL,
+  `amount_rate_reduced1` double DEFAULT NULL,
+  `amount_rate_reduced2` double DEFAULT NULL,
+  `amount_rate_zero` double DEFAULT NULL,
+  `amount_rate_special` double DEFAULT NULL,
+  `status_sales_counter` mediumtext COLLATE utf8_unicode_ci,
+  `plainDataString` text COLLATE utf8_unicode_ci,
+  `jwsCompact` text COLLATE utf8_unicode_ci,
+  `sig_previous_receipt` text COLLATE utf8_unicode_ci,
+  `signatureDeviceDamage` tinyint(1) DEFAULT NULL,
+  `typeOfReceipt` int(11) DEFAULT NULL,
+  `chainowner_id` int(11) DEFAULT NULL,
+  `store_id` int(11) DEFAULT NULL,
+  `terminal_id` int(11) DEFAULT NULL,
+  `insert_time` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`pid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `bill_log` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `chainowner_id` INT(11) DEFAULT NULL,
+  `store_id` INT(11) DEFAULT NULL,
+  `terminal_id` INT(11) DEFAULT NULL,
+  `total_sync_count` INT(11) DEFAULT NULL,
+  `remote_ip_address` VARCHAR(255) DEFAULT NULL,
+  `sync_time_stamp` TIMESTAMP NULL DEFAULT NULL,
+  `status` VARCHAR(100) DEFAULT NULL,
+  `message` VARCHAR(255) DEFAULT NULL,
+  `bill_time_stamp` DATETIME DEFAULT NULL,
+  `rg_num` VARCHAR(100) DEFAULT NULL,
+  `bill_id` INT(11) DEFAULT NULL,
+  `primary_terminal_id` INT(11) DEFAULT NULL,
+  `chainowner_name` VARCHAR(100) DEFAULT NULL,
+  `customer_number` VARCHAR(255) DEFAULT NULL,
+  `store_name` VARCHAR(50) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `billLogChainowner` (`chainowner_id`),
+  KEY `store_id` (`store_id`,`terminal_id`),
+  KEY `bill_id` (`bill_id`)
+) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `login_log` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `chainOwner_id` INT(11) DEFAULT NULL,
+  `employee_id` INT(11) DEFAULT NULL,
+  `remoteIp` VARCHAR(50) DEFAULT NULL,
+  `login_attempt` VARCHAR(20) DEFAULT NULL,
+  `attempt_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted` INT(11) DEFAULT NULL,
+  `super_user_name` VARCHAR(50) DEFAULT NULL,
+  `chainowner_username` VARCHAR(50) DEFAULT NULL,
+  `chainowner_name` VARCHAR(100) DEFAULT NULL,
+  `employee_username` VARCHAR(50) DEFAULT NULL,
+  `customer_number` VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `loginLogChainowner` (`chainOwner_id`),
+  KEY `loginLogEmp` (`employee_id`)
+) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE `master_log` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `table_name` VARCHAR(50) DEFAULT NULL,
+  `chainowner_id` INT(11) DEFAULT NULL,
+  `store_id` INT(11) DEFAULT NULL,
+  `terminal_id` INT(11) DEFAULT NULL,
+  `count` INT(11) DEFAULT NULL,
+  `date` DATE DEFAULT NULL,
+  `time` VARCHAR(50) DEFAULT NULL,
+  `remote_ip` VARCHAR(250) DEFAULT NULL,
+  `status` VARCHAR(100) DEFAULT NULL,
+  `message` VARCHAR(255) DEFAULT NULL,
+  `customer_number` VARCHAR(255) DEFAULT NULL,
+  `chainowner_name` VARCHAR(100) DEFAULT NULL,
+  `store_name` VARCHAR(50) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `masterLogChainowner` (`chainowner_id`)
+) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `sqlite_inventory` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `file_name` VARCHAR(255) DEFAULT NULL,
+  `sqlite_file` LONGBLOB,
+  `upload_date_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `terminal_id` INT(11) DEFAULT NULL,
+  `store_id` INT(11) DEFAULT NULL,
+  `chainowner_id` INT(11) DEFAULT NULL,
+  `deleted` INT(11) DEFAULT '0',
+  `log_file` LONGBLOB,
+  `upload_db` MEDIUMTEXT,
+  PRIMARY KEY (`id`)
+) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+ALTER TABLE `maintenancehq`.`bill_log` ADD COLUMN `context_path` VARCHAR(255) NULL;
+ALTER TABLE `maintenancehq`.`master_log` ADD COLUMN `context_path` VARCHAR(255) NULL;
+ALTER TABLE `maintenancehq`.`login_log` ADD COLUMN `context_path` VARCHAR(255) NULL;
+ALTER TABLE `maintenancehq`.`sqlite_inventory` ADD COLUMN `terminal_primary_id` INT NULL AFTER `upload_db`;
+
+/* Run Following script for Coping log data from hq db to maintenancehq db  */
+
+INSERT INTO maintenancehq.bill_log(chainowner_id,store_id,terminal_id,total_sync_count,remote_ip_address,sync_time_stamp,`status`,message,bill_time_stamp,rg_num,bill_id,primary_terminal_id,context_path) 
+SELECT chainowner_id,store_id,terminal_id,total_sync_count,remote_ip_address,sync_time_stamp,`status`,message,bill_time_stamp,rg_num,bill_id,primary_terminal_id,context_path FROM hq.bill_log;
+
+INSERT INTO maintenancehq.login_log(chainOwner_id,employee_id,remoteIp,login_attempt,attempt_date,deleted,super_user_name,context_path) 
+SELECT chainOwner_id,employee_id,remoteIp,login_attempt,attempt_date,deleted,super_user_name,context_path FROM hq.login_log;
+
+
+INSERT INTO maintenancehq.master_log(table_name,chainowner_id,store_id,terminal_id,`count`,`date`,`time`,remote_ip,`status`,message,context_path)
+SELECT table_name,chainowner_id,store_id,terminal_id,`count`,`date`,`time`,remote_ip,`status`,message,context_path FROM hq.master_log;
+
+UPDATE maintenancehq.bill_log SET maintenancehq.`bill_log`.`chainowner_name`=(SELECT hq.`chain_owner`.`name` FROM hq.`chain_owner` WHERE  maintenancehq.bill_log.`chainowner_id` = hq.`chain_owner`.id);
+UPDATE maintenancehq.bill_log SET maintenancehq.`bill_log`.`customer_number`=(SELECT hq.`chain_owner`.`customer_number` FROM hq.`chain_owner` WHERE  maintenancehq.bill_log.`chainowner_id` = hq.`chain_owner`.id);
+UPDATE maintenancehq.bill_log SET maintenancehq.`bill_log`.`store_name`=(SELECT hq.`store`.`store_name` FROM hq.`store` WHERE  maintenancehq.bill_log.`store_id` = hq.`store`.id);
+DROP TABLE IF EXISTS `maintenancehq`.`sqlite_closure_inventory`;
+CREATE TABLE `maintenancehq`.`sqlite_closure_inventory`( `id` INT NOT NULL AUTO_INCREMENT, `file_name` VARCHAR(100) NULL, `upload_date_time` TIMESTAMP NOT NULL, `log_file` LONGBLOB, `chainowner_id` INT, `store_id` INT, `terminal_id` INT, `terminal_primary_id` INT NULL, `deleted` INT NULL, PRIMARY KEY (`id`) ) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8; 
+ALTER TABLE `maintenancehq`.`sqlite_inventory` ADD INDEX `Terminal` (`terminal_id`), ADD INDEX `Store` (`store_id`), ADD INDEX `Chainowner` (`chainowner_id`); 

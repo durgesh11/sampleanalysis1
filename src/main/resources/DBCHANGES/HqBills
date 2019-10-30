@@ -1,0 +1,16 @@
+CREATE DATABASE `hqbills` CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+CREATE TABLE `bill` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+   customer_number VARCHAR(255) DEFAULT NULL,
+   bill_number VARCHAR(255) DEFAULT NULL,
+  `chainowner_id` INT(11) DEFAULT NULL,
+  `store_id` INT(11) DEFAULT NULL,
+  `terminal_id` INT(11) DEFAULT NULL,  
+  `report_file` LONGBLOB,
+  `paid` INT(1) DEFAULT 0,
+  `billing_date` TIMESTAMP,   
+  `payment_date` TIMESTAMP,   
+  `insertion_date` TIMESTAMP,   
+  PRIMARY KEY (`id`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;

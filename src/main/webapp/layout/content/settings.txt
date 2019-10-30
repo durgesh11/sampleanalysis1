@@ -1,0 +1,20 @@
+/*{
+"firstName":" ",
+"userName":" ",
+"property":1297738568550,
+"quickAssign": " ",
+"edit":" ",
+"value":10,
+"store":" ",
+"time": ,
+"terminals": ,
+"terminalName":" ",
+"terminalKeys": ,
+"certificate":" ",
+"download":" ",
+"clone":" "
+}*/
+
+ /*{"name":"id","title":"ID","breakpoints":"xs sm","type":"number","style":{"width":80,"maxWidth":80}},
+	{"name":"property","title":"Property","visible":false,"filterable":false},
+	{"name":"quickAssign","title":"Job Title","style":{"maxWidth":200,"overflow":"hidden","textOverflow":"ellipsis","wordBreak":"keep-all","whiteSpace":"nowrap"}},*/

@@ -1,0 +1,6 @@
+[
+
+	{"name":"firstName","title":"CLIENTS : HIGHEST UNANSWERED"},
+	{"name":"period","title":"Period","visible":false,"filterable":true},
+	{"name":"taget","title":" ","style":{"width":70,"maxWidth":70}}
+]
