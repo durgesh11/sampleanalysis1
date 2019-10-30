@@ -7,7 +7,7 @@
   
   
 	<properties>
-		<springframework.version>4.2.5.RELEASE</springframework.version>
+		<springframework.version>5.2.0.RELEASE</springframework.version>
 		<springsecurity.version>4.0.4.RELEASE</springsecurity.version>
 		<springsecurityoauth2.version>2.0.10.RELEASE</springsecurityoauth2.version>
 		<hibernate.version>4.3.11.Final</hibernate.version>
